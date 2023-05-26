@@ -1,0 +1,185 @@
+﻿<Window x:Class="InterpolationApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:InterpolationApp"
+        xmlns:Oxy="http://oxyplot.org/wpf"
+        mc:Ignorable="d"
+        Title="Interpolation App" Height="675" Width="1200">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Cursor" Value="IBeam"/>
+        </Style>
+        <local:Dirs_Converter x:Key="key_Dirs_Converter"/>
+    </Window.Resources>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static local:MainWindow.RunClickCommand}"
+                        CanExecute="CanCalculateHandler"
+                        Executed="Run_Click"/>
+
+        <CommandBinding Command="ApplicationCommands.Save"
+                        CanExecute="CanSaveCommandHandler"
+                        Executed="SaveButton_Click"/>
+    </Window.CommandBindings>
+
+    <StackPanel>
+        <Menu x:Name="menu"
+              VerticalAlignment="Top"
+              Height="18">
+            <MenuItem Header="File">
+                <MenuItem x:Name="SaveButton"
+                          Header="Save"
+                          Command="ApplicationCommands.Save"
+                          CommandParameter="From Button"/>
+            </MenuItem>
+            <MenuItem Header="Execute">
+                <MenuItem Header="RawData from control"
+                          Command="{x:Static local:MainWindow.RunClickCommand}"/>
+                <MenuItem Header="RawData from File"
+                          Click="DataFromFile_Click"/>
+            </MenuItem>
+            <MenuItem Header="About"
+                      x:Name="About"
+                      Click="About_Click"/>
+        </Menu>
+        <Grid Height="644">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="155*"/>
+                <RowDefinition Height="167*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.5*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="0,0,423,0">
+                <TextBlock HorizontalAlignment="Center"
+                     Margin="5">
+                    Количество узлов сетки
+                </TextBlock>
+                <TextBox x:Name="RawDataNNodesField"
+                     Width="150"
+                     Margin="5"
+                     Text="{Binding Path=RDNNodes, ValidatesOnDataErrors=True}">
+                </TextBox>
+
+                <UniformGrid Columns="2" >
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Margin="5" HorizontalAlignment="Center">
+                        Левая точка
+                        </TextBlock>
+                        <TextBox x:Name="LeftPointField" 
+                                 Margin="5"
+                                 Text="{Binding Ends[0], ValidatesOnDataErrors=True}">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Margin="5" HorizontalAlignment="Center">
+                        Правая точка
+                        </TextBlock>
+                        <TextBox x:Name="RightPointField" Margin="5"
+                             Text="{Binding Ends[1], ValidatesOnDataErrors=True}">
+                        </TextBox>
+                    </StackPanel>
+                </UniformGrid >
+                <StackPanel HorizontalAlignment="Center" Margin="10">
+                    <RadioButton x:Name="Uniform"
+                         IsChecked="{Binding Uniform}">
+                        Равномерная сетка
+                    </RadioButton>
+                    <RadioButton>
+                        Неравномерная сетка
+                    </RadioButton>
+                </StackPanel>
+                <UniformGrid Columns="2">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock HorizontalAlignment="Center" Height="40"
+                            Margin="5">
+                        Количество узлов <LineBreak/>
+                        интерполяции
+                        </TextBlock>
+                        <TextBox  x:Name="SplineDataNNodesField"
+                            Margin="5"
+                             Text="{Binding SDNNodes, ValidatesOnDataErrors=True}">
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock HorizontalAlignment="Center" Height="40"  Margin="5">
+                            Левая и првая<LineBreak/> 
+                            производные через ";"
+                        </TextBlock>
+                        <TextBox Margin="5"
+                           Text="{Binding Path=Derivatives, Converter={StaticResource key_Dirs_Converter}}">
+                        </TextBox>
+                    </StackPanel>
+                </UniformGrid>
+                <TextBlock HorizontalAlignment="Center">
+                    Функция инициализации<LineBreak/>
+                    массива значений
+                </TextBlock>
+                <ComboBox x:Name="FuncSelect"
+                          Width="150"
+                          Margin="5"
+                          SelectedItem ="{Binding RDFunc}">
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Grid.RowSpan="2">
+                <TextBlock
+                HorizontalAlignment="Center">
+                Визуализация полученных данных
+                </TextBlock>
+                <Oxy:PlotView Name="Plotter"
+                      HorizontalAlignment="Stretch" 
+                      Height="310" 
+                      Margin="10,0,10,20" 
+                      BorderThickness="1"
+                      Model="{Binding Model.PlotModel}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="0" Grid.Row="1">
+                <TextBlock Margin="5" HorizontalAlignment="Center">
+                    Значения RawData
+                </TextBlock>
+                <ListBox x:Name="RawDataInfo" Margin="100,0,100,0" Height="200"/>
+                <TextBlock Margin="5" HorizontalAlignment="Center">
+                    Интеграл по отрезку
+                </TextBlock>
+                <TextBlock x:Name="IntegralBlock" HorizontalAlignment="Center"
+                    Text="{Binding splineData.Integral}">
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Grid.Row="1">
+                <TextBlock Margin="5" HorizontalAlignment="Center">
+                    Значения SplineData
+                </TextBlock>
+                <ListBox x:Name="SplineDataInfo" Margin="5,0,5,0" Height="200"/>
+                <TextBlock Margin="5" HorizontalAlignment="Center">
+                    Выбраный элемент SplineData
+                </TextBlock>
+                <TextBlock Text="{Binding ElementName=SplineDataInfo, Path=SelectedItem}"/>
+            </StackPanel>
+
+            <Button x:Name="Run"
+                    Grid.Column="2"
+                    Grid.Row="1"
+                Width="140"
+                Height="50"
+                Margin="5"
+                FontSize="20"
+                Cursor="Hand"
+                        Command="{x:Static local:MainWindow.RunClickCommand}"
+                Click="Run_Click">
+                Запуск
+            </Button>
+        </Grid>
+    </StackPanel>
+</Window>
